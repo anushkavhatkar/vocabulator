@@ -1,21 +1,20 @@
 // Passive Vocabulary Builder - Content Script
 
-let vocabularyWords = new Set();
+let commonWords = new Set();
 let isEnabled = true;
 let highlightedWords = [];
 const MAX_HIGHLIGHTS = 15;
 let tooltip = null;
 
-// Load curated vocabulary list (GRE + Academic Word List)
-async function loadVocabularyList() {
+// Load common words list (top 30k most common)
+async function loadCommonWords() {
   try {
     const response = await fetch(chrome.runtime.getURL('words.json'));
     const data = await response.json();
-    vocabularyWords = new Set(data.vocabularyWords.map(w => w.toLowerCase()));
-    console.log('Loaded', vocabularyWords.size, 'vocabulary words');
-    console.log('Sources:', data.sources.join(', '));
+    commonWords = new Set(data.commonWords.map(w => w.toLowerCase()));
+    console.log('Loaded', commonWords.size, 'common words for filtering');
   } catch (error) {
-    console.error('Failed to load vocabulary list:', error);
+    console.error('Failed to load word list:', error);
   }
 }
 
@@ -26,15 +25,15 @@ async function checkEnabled() {
   return isEnabled;
 }
 
-// Helper to check if a word is in our curated vocabulary list
-function isVocabularyWord(word) {
+// Helper to check if a word is rare (NOT in common words list)
+function isRareWord(word) {
   const clean = word.toLowerCase().replace(/[^a-z]/g, '');
 
-  // Skip very short words
-  if (clean.length < 3) return false;
+  // Skip short words (less than 4 letters)
+  if (clean.length < 4) return false;
 
-  // Check if word is in our curated vocabulary list (positive matching)
-  return vocabularyWords.has(clean);
+  // Word is rare if it's NOT in the top 30k common words
+  return !commonWords.has(clean);
 }
 
 // Helper to check if word is likely a proper noun
@@ -116,8 +115,8 @@ function highlightWords() {
       // Skip proper nouns
       if (isProperNoun(word, text)) continue;
 
-      // Check if word is in our vocabulary list
-      if (isVocabularyWord(word)) {
+      // Check if word is rare (not in top 30k common words)
+      if (isRareWord(word)) {
         // Create highlight
         const span = document.createElement('span');
         span.className = 'vocab-highlight';
@@ -153,7 +152,7 @@ function highlightWords() {
     }
   }
 
-  console.log('Highlighted', highlightedWords.length, 'vocabulary words');
+  console.log('Highlighted', highlightedWords.length, 'rare words');
 }
 
 // Highlight words in a specific text node
@@ -170,7 +169,7 @@ function highlightWordsInNode(textNode) {
 
     if (!highlightedWords.includes(wordLower) &&
         !isProperNoun(word, text) &&
-        isVocabularyWord(word)) {
+        isRareWord(word)) {
 
       const span = document.createElement('span');
       span.className = 'vocab-highlight';
@@ -308,7 +307,7 @@ function removeHighlights() {
 
 // Initialize extension
 async function init() {
-  await loadVocabularyList();
+  await loadCommonWords();
   const enabled = await checkEnabled();
 
   if (enabled) {

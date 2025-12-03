@@ -4,11 +4,11 @@ A Chrome extension that helps you build your vocabulary passively while browsing
 
 ## Overview
 
-This extension automatically highlights uncommon words on any webpage you visit. Simply hover over a highlighted word to see its definition - no setup, no login, no extra effort required.
+This extension automatically highlights valuable vocabulary words on any webpage you visit. Simply hover over a highlighted word to see its definition - no setup, no login, no extra effort required.
 
 ## Features
 
-- **Automatic Highlighting**: Uncommon words (outside the top 15,000 most common English words) are subtly highlighted as you browse
+- **Curated Vocabulary**: Highlights GRE-level and academic vocabulary words that are genuinely useful to learn
 - **Instant Definitions**: Hover over any highlighted word to see its definition in a clean tooltip
 - **Toggle On/Off**: Easily enable or disable highlighting via the extension icon
 - **Passive Learning**: No setup required - just browse normally and learn naturally
@@ -35,18 +35,21 @@ This extension automatically highlights uncommon words on any webpage you visit.
 ## How It Works
 
 1. The extension scans text on each webpage you visit
-2. It identifies words that are not in the top 15,000 most common English words
-3. Proper nouns and capitalized words (likely names/places) are automatically skipped
-4. The first 10-15 uncommon words are highlighted with subtle styling
-5. When you hover over a highlighted word, the extension fetches its definition from the Free Dictionary API
-6. If no definition is found, the word is not highlighted
+2. It uses a curated list of ~4,000 GRE and academic vocabulary words to identify valuable learning opportunities
+3. Words are matched against this curated list (not just statistical frequency)
+4. Proper nouns and capitalized words (likely names/places) are automatically skipped
+5. Up to 15 vocabulary words are highlighted with subtle styling per page
+6. When you hover over a highlighted word, the extension fetches its definition from the Free Dictionary API
 
 ## Technical Details
 
 - **Manifest Version**: V3 (Chrome's current standard)
-- **Word Frequency Data**: Based on Google's n-gram frequency analysis
+- **Vocabulary Sources**:
+  - Magoosh GRE 1000 words (high-quality test prep vocabulary)
+  - Academic Word List (AWL) - 570 word families from Victoria University
+  - Total: ~4,073 curated vocabulary words
 - **Dictionary API**: [Free Dictionary API](https://dictionaryapi.dev/) - no authentication required
-- **Frequency Threshold**: Words outside the top 15,000 most common are highlighted
+- **Matching Strategy**: Positive matching (word IS in curated list) rather than frequency-based filtering
 - **Max Highlights**: Limited to 15 words per page for optimal user experience
 
 ## File Structure
@@ -58,7 +61,7 @@ vocabulator/
 ├── styles.css             # Styling for highlights and tooltips
 ├── popup.html             # Extension popup UI
 ├── popup.js               # Toggle functionality
-├── words.json             # 15,000 most common English words
+├── words.json             # Curated GRE + Academic vocabulary list (~4,073 words)
 ├── icon16.png             # Extension icon (16x16)
 ├── icon48.png             # Extension icon (48x48)
 ├── icon128.png            # Extension icon (128x128)
@@ -127,5 +130,6 @@ MIT License - feel free to use and modify as needed.
 
 ## Credits
 
-- Word frequency data from [Google's n-gram corpus](https://github.com/first20hours/google-10000-english)
+- GRE vocabulary from [Magoosh GRE Flashcards](https://github.com/supersaiyanmode/GRE-Words-Magoosh) - 1,000 curated words
+- Academic Word List (AWL) from [Victoria University via machine_readable_wordlists](https://github.com/lpmi-13/machine_readable_wordlists) - 570 word families
 - Dictionary definitions from [Free Dictionary API](https://dictionaryapi.dev/)

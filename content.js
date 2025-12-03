@@ -1,20 +1,21 @@
 // Passive Vocabulary Builder - Content Script
 
-let commonWords = new Set();
+let vocabularyWords = new Set();
 let isEnabled = true;
 let highlightedWords = [];
 const MAX_HIGHLIGHTS = 15;
 let tooltip = null;
 
-// Load common words list
-async function loadCommonWords() {
+// Load curated vocabulary list (GRE + Academic Word List)
+async function loadVocabularyList() {
   try {
     const response = await fetch(chrome.runtime.getURL('words.json'));
     const data = await response.json();
-    commonWords = new Set(data.commonWords.map(w => w.toLowerCase()));
-    console.log('Loaded', commonWords.size, 'common words');
+    vocabularyWords = new Set(data.vocabularyWords.map(w => w.toLowerCase()));
+    console.log('Loaded', vocabularyWords.size, 'vocabulary words');
+    console.log('Sources:', data.sources.join(', '));
   } catch (error) {
-    console.error('Failed to load word list:', error);
+    console.error('Failed to load vocabulary list:', error);
   }
 }
 
@@ -25,17 +26,15 @@ async function checkEnabled() {
   return isEnabled;
 }
 
-// Helper to check if a word is uncommon
-function isUncommonWord(word) {
+// Helper to check if a word is in our curated vocabulary list
+function isVocabularyWord(word) {
   const clean = word.toLowerCase().replace(/[^a-z]/g, '');
 
-  // Skip short words (less than 4 letters)
-  if (clean.length < 4) return false;
+  // Skip very short words
+  if (clean.length < 3) return false;
 
-  // Skip if it's in the common words list
-  if (commonWords.has(clean)) return false;
-
-  return true;
+  // Check if word is in our curated vocabulary list (positive matching)
+  return vocabularyWords.has(clean);
 }
 
 // Helper to check if word is likely a proper noun
@@ -117,8 +116,8 @@ function highlightWords() {
       // Skip proper nouns
       if (isProperNoun(word, text)) continue;
 
-      // Check if word is uncommon
-      if (isUncommonWord(word)) {
+      // Check if word is in our vocabulary list
+      if (isVocabularyWord(word)) {
         // Create highlight
         const span = document.createElement('span');
         span.className = 'vocab-highlight';
@@ -154,7 +153,7 @@ function highlightWords() {
     }
   }
 
-  console.log('Highlighted', highlightedWords.length, 'uncommon words');
+  console.log('Highlighted', highlightedWords.length, 'vocabulary words');
 }
 
 // Highlight words in a specific text node
@@ -171,7 +170,7 @@ function highlightWordsInNode(textNode) {
 
     if (!highlightedWords.includes(wordLower) &&
         !isProperNoun(word, text) &&
-        isUncommonWord(word)) {
+        isVocabularyWord(word)) {
 
       const span = document.createElement('span');
       span.className = 'vocab-highlight';
@@ -309,7 +308,7 @@ function removeHighlights() {
 
 // Initialize extension
 async function init() {
-  await loadCommonWords();
+  await loadVocabularyList();
   const enabled = await checkEnabled();
 
   if (enabled) {

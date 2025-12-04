@@ -6,7 +6,7 @@ let highlightedWords = [];
 const MAX_HIGHLIGHTS = 15;
 let tooltip = null;
 
-// Load common words list (top 30k most common)
+// Load common words list (top 50k most common)
 async function loadCommonWords() {
   try {
     const response = await fetch(chrome.runtime.getURL('words.json'));
@@ -32,7 +32,7 @@ function isRareWord(word) {
   // Skip short words (less than 4 letters)
   if (clean.length < 4) return false;
 
-  // Word is rare if it's NOT in the top 30k common words
+  // Word is rare if it's NOT in the top 50k common words
   return !commonWords.has(clean);
 }
 
@@ -115,7 +115,7 @@ function highlightWords() {
       // Skip proper nouns
       if (isProperNoun(word, text)) continue;
 
-      // Check if word is rare (not in top 30k common words)
+      // Check if word is rare (not in top 50k common words)
       if (isRareWord(word)) {
         // Create highlight
         const span = document.createElement('span');
